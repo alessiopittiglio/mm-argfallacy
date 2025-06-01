@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mm-argfallacy"
+version = "0.1.0"
+description = "MM-ArgFallacy2025."
+authors = [
+  { name = "Alessio Pittiglio", email = "alessiopittiglio@icloud.com" }
+]
+
+[tool.setuptools]
+packages = ["mm_argfallacy"]

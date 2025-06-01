@@ -1,0 +1,8 @@
+__pycache__/
+data/
+data_old/
+lightning_logs/
+results/
+checkpoints/
+wandb/
+*.egg-info/

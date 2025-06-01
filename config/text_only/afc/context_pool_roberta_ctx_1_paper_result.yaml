@@ -1,0 +1,115 @@
+# Configuration file for a SINGLE COMPONENT of the Text-Only Ensemble.
+# This specific component is: ContextPool-RoBERT with Context Window 1,
+#
+# Part of the ensemble presented in the paper:
+# "Leveraging Context for Multimodal Fallacy Classification in Political Debates"
+#
+# Purpose: This configuration defines all hyperparameters and settings required to
+#          TRAIN this individual model component. The trained checkpoint will then be 
+#          used as part of the text-only ensemble.
+#
+# Usage:
+#   python run_training.py --config path/to/this/config.yaml
+# --------------------------------------------------------------------------------------
+# General Settings
+# --------------------------------------------------------------------------------------
+seed: 20
+
+# --------------------------------------------------------------------------------------
+# Data Configuration
+# --------------------------------------------------------------------------------------
+data_module:
+  data_path: data_old/
+  split_key: default
+
+  # MMUsedFallacy specific dataset configurations
+  dataset:
+    task_name: afc
+    input_mode: TEXT_ONLY
+    with_context: true
+    context_window: 1
+
+  # Dataloader settings
+  batch_size: 8
+  
+  validation_split: 0.2
+  
+  # Collator
+  collator:
+    name: text
+    tokenizer:
+      model_card: FacebookAI/roberta-large
+      params:
+        truncation: true
+        max_length: 512
+  
+# --------------------------------------------------------------------------------------
+# Model Configuration
+# --------------------------------------------------------------------------------------
+model:
+  model_type: context_pooling
+  model_card: FacebookAI/roberta-large
+  is_transformer_trainable: true
+  num_classes: 6
+  dropout_rate: 0.1
+  head:
+    hidden_layers: [100, 50]
+  use_attentive_pooling: false
+  use_fusion_gate: false
+
+loss_function:
+  name: cross_entropy
+  args:
+    class_weights: [0.2586882, 1.05489022, 2.28787879, 3.2030303, 4.09689922, 5.18137255]
+
+# --------------------------------------------------------------------------------------
+# Training Configuration
+# --------------------------------------------------------------------------------------
+trainer:
+  accelerator: gpu
+  devices: 1
+  max_epochs: 20
+  precision: bf16-mixed
+  accumulate_grad_batches: 3
+  deterministic: true
+  benchmark: false
+
+# --------------------------------------------------------------------------------------
+# Optimizer Configuration
+# --------------------------------------------------------------------------------------
+optimizer:
+  name: AdamW
+  params:
+    lr: 0.00003404319196745681
+    weight_decay: 0.00008050833727768404
+    fused: true
+
+# --------------------------------------------------------------------------------------
+# Learning Rate Scheduler Configuration
+# --------------------------------------------------------------------------------------
+scheduler: 
+  name: linear
+  params:
+    warmup_ratio: 0.3
+
+# --------------------------------------------------------------------------------------
+# Callbacks Configuration
+# --------------------------------------------------------------------------------------
+callbacks:
+  model_checkpoint:
+      monitor: val_f1
+      mode: max
+      save_top_k: 1
+  
+  early_stopping:
+    monitor: val_f1
+    mode: max
+    patience: 5
+
+# --------------------------------------------------------------------------------------
+# Logger Configuration
+# --------------------------------------------------------------------------------------
+logger:
+  wandb:
+    enabled: true
+    project: mmused-fallacy
